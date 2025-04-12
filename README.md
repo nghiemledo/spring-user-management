@@ -84,6 +84,98 @@ The system includes the following core functionalities:
 
 > ⚠️ Make sure the backend and frontend are configured to communicate (e.g., correct API base URL in frontend).
 
+
+## 🐳 Docker Support
+
+This project includes Docker configurations for both the frontend and backend, along with a MySQL database, using `docker-compose`.
+
+### 📦 Dockerfile - Frontend (React)
+
+```Dockerfile
+# --- Build Stage ---
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json yarn.lock ./
+RUN yarn install
+COPY . .
+RUN yarn build
+
+# --- Run Stage ---
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### 📦 Dockerfile - Backend (Spring Boot)
+
+```Dockerfile
+FROM openjdk:23-jdk-slim
+
+WORKDIR /app
+VOLUME /tmp
+COPY target/*.jar app.jar
+
+EXPOSE 8089
+ENTRYPOINT ["java", "-DwebAllowOthers=true", "-jar", "app.jar"]
+```
+
+### ⚙️ docker-compose.yml
+
+```yaml
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_DATABASE: db_name
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_pass
+      MYSQL_ROOT_PASSWORD: db_root_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./api
+    container_name: springboot-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_name?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: db_name
+      SPRING_DATASOURCE_PASSWORD: db_pass
+      JWT_SECRET: jwt_secret
+      JWT_EXPIRATION: 3600000
+      JWT_REFRESH_EXPIRATION: 604800000
+
+  frontend:
+    build:
+      context: ./client
+    container_name: frontend-app
+    ports:
+      - "8080:80"
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql-data:
+```
+
+You can run the full stack with one command:
+
+```bash
+docker-compose up --build
+```
+
 ## 📸 Screenshots
 
 > *(Optional: Add some screenshots or GIFs to show the UI and key flows)*
