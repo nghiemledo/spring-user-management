@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_USER: nghiemledo
+      MYSQL_PASSWORD: 12345678
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./homework01
+    container_name: springboot-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/demo?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: nghiemledo
+      SPRING_DATASOURCE_PASSWORD: 12345678
+      JWT_SECRET: yourverysecuresecretkeythatislongenough1234567890
+      JWT_EXPIRATION: 3600000
+      JWT_REFRESH_EXPIRATION: 604800000
+
+  frontend:
+    build:
+      context: ./client
+    container_name: frontend-app
+    ports:
+      - "8080:80"
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql-data:
