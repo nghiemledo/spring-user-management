@@ -74,12 +74,12 @@ The system includes the following core functionalities:
 
 2. Install dependencies:
    ```bash
-   npm install
+   yarn install
    ```
 
 3. Start the development server:
    ```bash
-   npm run dev
+   yarn run dev
    ```
 
 > ⚠️ Make sure the backend and frontend are configured to communicate (e.g., correct API base URL in frontend).
@@ -182,7 +182,7 @@ docker-compose up --build
 
 # License
 
-This project is under the MIT License.
+This project is under the MIT License(LICENSE).
 
 # Contact
 
